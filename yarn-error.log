@@ -1,0 +1,36 @@
+Arguments: 
+  /usr/bin/node /usr/local/bin/yarn add conference-front server
+
+PATH: 
+  /home/maycon/anaconda3/condabin:/home/maycon/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/maycon/Android/Sdk/emulator:/home/maycon/Android/Sdk/tools:/home/maycon/Android/Sdk/tools/bin:/home/maycon/Android/Sdk/platform-tools:/home/maycon/android-studio/bin:/home/maycon/Android/Sdk/emulator:/home/maycon/Android/Sdk/tools:/home/maycon/Android/Sdk/tools/bin:/home/maycon/Android/Sdk/platform-tools:/home/maycon/android-studio/bin
+
+Yarn version: 
+  1.22.10
+
+Node version: 
+  14.19.0
+
+Platform: 
+  linux x64
+
+Trace: 
+  Error: https://registry.yarnpkg.com/conference-front: Not found
+      at Request.params.callback [as _callback] (/usr/local/lib/node_modules/yarn/lib/cli.js:66988:18)
+      at Request.self.callback (/usr/local/lib/node_modules/yarn/lib/cli.js:140662:22)
+      at Request.emit (events.js:400:28)
+      at Request.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:141634:10)
+      at Request.emit (events.js:400:28)
+      at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:141556:12)
+      at Object.onceWrapper (events.js:519:28)
+      at IncomingMessage.emit (events.js:412:35)
+      at endReadableNT (internal/streams/readable.js:1334:12)
+      at processTicksAndRejections (internal/process/task_queues.js:82:21)
+
+npm manifest: 
+  No manifest
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
