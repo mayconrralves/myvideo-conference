@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Video from "./components/Video";
 import {config} from './config/socket';
 function App() {
   const [socket, setSocket] = useState(null);
@@ -15,7 +16,7 @@ function App() {
     console.log(1)
   return (
     <div className="App">
-      <button onClick={teste}>Click</button>
+     <Video />
     </div>
   );
 }
