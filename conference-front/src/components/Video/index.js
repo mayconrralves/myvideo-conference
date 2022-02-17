@@ -1,8 +1,7 @@
 import React, {useEffect, useState, useRef} from 'react';
 
-export default function Video(){
+export default function Video({mediaStream, setMediaStream}){
     const videoRef = useRef(null);
-    const [mediaStream, setMediaStream] = useState(null);
     const [startFlag, setStartFlag] = useState(true);
     /* useEffect(()=>{
         console.log('mediaStream', mediaStream)
