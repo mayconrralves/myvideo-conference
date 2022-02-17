@@ -7,12 +7,9 @@ const httpServer = http.createServer(app);
 const io = new Server(httpServer);
 
 io.on('connection', socket=>{
-    socket.on('test', response=>{
-        socket.emit('test', 'ok');
-        console.log('response', response);
-    });
+
 });
 
 httpServer.listen(8000,()=>{
     console.log('listen on port 8000')
-})
+});
