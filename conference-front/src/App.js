@@ -9,7 +9,7 @@ function App() {
   return (
     <div className="App">
       <Communication />
-     <Video mediaStream={mediaStream} setMediaStream={setMediaStream}/>
+     {/* <Video mediaStream={mediaStream} setMediaStream={setMediaStream}/> */}
     </div>
   );
 }
