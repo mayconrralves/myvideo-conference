@@ -20,8 +20,23 @@ io.on('connection', socket=>{
         }else{
             socket.emit('full_room', room);
         }
+        socket.on('start_call',room=>{
+            console.log('start_call');
+            socket.to(room).emit('start_call');
+        });
+        socket.on('webrtc_offer', event=>{
+            console.log('offer', event);
+            socket.to(event.room).emit('webrtc_offer', event.sdp);
+        });
+        socket.on('webrtc_answer', event=>{
+            console.log('answer', event);
+            socket.to(event.room).emit('webrtc_answer', event.sdp);
+        });
+        socket.on('ice_candidate', event=>{
+            console.log('ice_candidate');
+            socket.to(event.room).emit('ice_candidate', event);
+        });
    });
-   // const users = socket.adapter.rooms.get('teste1');
    
 });
 

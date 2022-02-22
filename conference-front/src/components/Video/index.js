@@ -1,10 +1,10 @@
 import React, {useEffect, useState, useRef} from 'react';
 
-export default function Video({mediaStream, setMediaStream}){
+export default function Video({ otherStream }){
     const videoRef = useRef(null);
-    const [startFlag, setStartFlag] = useState(true);
-    /* useEffect(()=>{
-        console.log('mediaStream', mediaStream)
+    const [mediaStream, setMediaStream] = useState(null)
+    
+    useEffect(()=>{
         const startVideo = async ()=>{
             try{
               const stream = await navigator.mediaDevices.getUserMedia({
@@ -13,11 +13,13 @@ export default function Video({mediaStream, setMediaStream}){
               }); 
               setMediaStream(stream);
             }catch(error){
-              console.log('error', error);
+              console.error('error', error);
             }
           }
         if(!mediaStream){
-            startVideo();
+            if(!otherStream){
+                startVideo();
+            }
         } else {
             return function cleanup(){
                 mediaStream.getTracks().forEach((track)=>{
@@ -25,41 +27,18 @@ export default function Video({mediaStream, setMediaStream}){
                 })
             }
         }
-    },[mediaStream]);
- */
-    const startVideo = async() =>{
-        try{
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: true,
-                audio: false,
-            }); 
-            setMediaStream(stream);
-            setStartFlag(!startFlag);
-          }catch(error){
-            console.log('error', error);
-          }
-        }
-     
+    },[mediaStream, setMediaStream, otherStream]);
+    
       
     const videoPlay = ()=>{
         videoRef.current.play();
     }
-    const stopVideo = ()=>{
-      videoRef.current.srcObject = null;
-      mediaStream.getTracks().forEach((track)=>{
-          track.stop();
-        });
-        setMediaStream(null);
-        setStartFlag(!startFlag);
-    }
+   
     if(mediaStream && videoRef.current && !videoRef.current.srcObject){
-        videoRef.current.srcObject = mediaStream;
+        videoRef.current.srcObject = otherStream ? otherStream : mediaStream;
     }
 
  return <div>
      <video ref={videoRef} onCanPlay={videoPlay}></video>
-    {startFlag && <button onClick={startVideo}>Start</button>}
-    {!startFlag && <button onClick={stopVideo}>Stop</button>}
-     
  </div>
 }
