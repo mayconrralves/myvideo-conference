@@ -1,4 +1,4 @@
-export default {
+const iceCandidates =  {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
          { urls: 'stun:stun1.l.google.com:19302' },
@@ -6,4 +6,6 @@ export default {
         { urls: 'stun:stun3.l.google.com:19302' },
         { urls: 'stun:stun4.l.google.com:19302' },
       ],
-}
+};
+
+export default iceCandidates;
