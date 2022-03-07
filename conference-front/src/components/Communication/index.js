@@ -1,6 +1,7 @@
 import React,{useState, useEffect, useRef} from 'react';
 import { configSocket } from '../../config/socket';
 import iceCandidates from '../../services/iceCandidate';
+import Video from '../Video';
 
 const mediaConstrains = {
     video: true,
@@ -9,7 +10,8 @@ const mediaConstrains = {
 
 export default function Communication(){
     const videoRef = useRef(null);
-    const videoRemoteRef = useRef(null);
+    const [videoLocal, setvideoLocal] = useState(null);
+    const [videoRemote, setVideoRemote] = useState(null);
     const socket = useRef();
     const [ room, setRoom] = useState(null);
     const [ joinRoom, setJoinRoom] = useState(false);
@@ -17,53 +19,47 @@ export default function Communication(){
         let rtcPeerConnection = null;
         let localStream = null;
         let roomOwner = false;
-
         socket.current = configSocket();
-
-            socket.current.on('created_room',async (room)=>{
-                roomOwner=true;
-                console.log('created_room on');
-                localStream = await setLocalStream(mediaConstrains);
+        socket.current.on('full_room',(room)=>{
+            alert(`Full Room ${room}`);
+        });
+        socket.current.on('created_room',async (room)=>{
+            roomOwner=true;
+            localStream = await setLocalStream(mediaConstrains);
+        });
+        socket.current.on('joined_room',async (room)=>{
+            localStream = await setLocalStream(mediaConstrains);
+            socket.current.emit('start_call', room);
+        });
+        socket.current.on('start_call', async (room)=>{
+            if(roomOwner){
+                rtcPeerConnection = new RTCPeerConnection(iceCandidates);
+                addLocalTracks(rtcPeerConnection, localStream);
+                rtcPeerConnection.ontrack = addRemoteStream;
+                rtcPeerConnection.onicecandidate = (event) => sendIceCandidate(event, room);
+                await createOffer(rtcPeerConnection, room);
+            }
+        });
+        socket.current.on('webrtc_offer', async (webrtcEvent)=>{
+            if(!roomOwner){
+                rtcPeerConnection = new RTCPeerConnection(iceCandidates);
+                addLocalTracks(rtcPeerConnection, localStream);
+                rtcPeerConnection.ontrack = addRemoteStream;
+                rtcPeerConnection.onicecandidate = (event) => sendIceCandidate(event, webrtcEvent.room);
+                rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(webrtcEvent.sdp));
+                await createAnswer(rtcPeerConnection, webrtcEvent.room);
+            }
+        });
+        socket.current.on('webrtc_answer', event=>{
+            rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(event));
+        });
+        socket.current.on('ice_candidate', (event)=>{
+            const candidate = new RTCIceCandidate({
+                sdpMLineIndex: event.label,
+                candidate: event.candidate,
             });
-            socket.current.on('joined_room',async (room)=>{
-                console.log('joined_room on');
-                localStream = await setLocalStream(mediaConstrains);
-                socket.current.emit('start_call', room);
-                
-            });
-            socket.current.on('start_call', async (room)=>{
-                console.log('start_call on');
-                if(roomOwner){
-                    rtcPeerConnection = new RTCPeerConnection(iceCandidates);
-                    addLocalTracks(rtcPeerConnection, localStream);
-                    rtcPeerConnection.ontrack = addRemoteStream;
-                    rtcPeerConnection.onicecandidate = (event) => sendIceCandidate(event, room);
-                    await createOffer(rtcPeerConnection, room);
-                }
-            });
-            socket.current.on('webrtc_offer', async (webrtcEvent)=>{
-                console.log('webrtc_offer on');
-                if(!roomOwner){
-                    rtcPeerConnection = new RTCPeerConnection(iceCandidates);
-                    addLocalTracks(rtcPeerConnection, localStream);
-                    rtcPeerConnection.ontrack = addRemoteStream;
-                    rtcPeerConnection.onicecandidate = (event) => sendIceCandidate(event, webrtcEvent.room);
-                    rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(webrtcEvent.sdp));
-                    await createAnswer(rtcPeerConnection, webrtcEvent.room);
-                }
-            });
-            socket.current.on('webrtc_answer', event=>{
-                console.log('answer event on');
-                rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(event));
-            });
-            socket.current.on('ice_candidate', (event)=>{
-                console.log('ice candidate on')
-                const candidate = new RTCIceCandidate({
-                    sdpMLineIndex: event.label,
-                    candidate: event.candidate,
-                });
-                rtcPeerConnection.addIceCandidate(candidate);
-            });
+            rtcPeerConnection.addIceCandidate(candidate);
+        });
     }, []);
     const setLocalStream = async (mediaConstrains) =>{
         let stream;
@@ -72,22 +68,21 @@ export default function Communication(){
         }catch(error){
             console.error('Could not get user media', error);
         }
-        videoRef.current.srcObject = stream;
+        setvideoLocal(stream);
         return stream;
         
     }
     const sendIceCandidate = (event, room)=>{
-        console.log('ice candidate');
         if(event.candidate){
             socket.current.emit('ice_candidate',{
                 room,
                 label: event.candidate.sdpMLineIndex,
                 candidate: event.candidate.candidate,
-            })
+            });
         }
     }
     const addRemoteStream = (event)=>{
-        videoRemoteRef.current.srcObject = event.streams[0];
+        setVideoRemote(event.streams[0]);
     }
     const addLocalTracks = (rtcPeerConnection, localStream )=>{
         localStream.getTracks().forEach((track)=>{
@@ -130,12 +125,6 @@ export default function Communication(){
         setJoinRoom(true);
         socket.current.emit('join_room', room);
     }
-    const videoPlay = ()=>{
-        videoRef.current.play();
-    }
-    const videoRemotePlay = ()=>{
-        videoRemoteRef.current.play();
-    }
     return !joinRoom ? (
         <>
             <label>Room's Name: </label>
@@ -146,8 +135,8 @@ export default function Communication(){
     : 
     ( 
         <>
-            <video ref={videoRef} onCanPlay={videoPlay}></video>
-            <video ref={videoRemoteRef} onCanPlay={videoRemotePlay} ></video>
+            <Video srcObject={videoLocal} autoPlay />
+            <Video srcObject={videoRemote} autoPlay />
         </>
     )
 }
